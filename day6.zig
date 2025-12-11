@@ -102,24 +102,12 @@ fn iterColumns(buf: []const u8, delim: u8) ColumnIterator {
 
 fn numAtColumn(buf: []const u8, col: usize, rows: usize, stride: usize) ?u64 {
     var value: u64 = 0;
-    var is_num: bool = false;
-    var start_row: usize = 0;
-    var end_row: usize = rows;
-
     for (0..rows) |r| {
         const c = buf[r*stride + col];
-        if (c == ' ' and is_num) {
-            end_row = r;
-            break;
+        if (c != ' ') {
+            value *= 10;
+            value += c - '0';
         }
-        if (c != ' ' and !is_num) {
-            is_num = true;
-            start_row = r;
-        }
-    }
-    const degree = end_row - start_row - 1;
-    for (start_row..end_row) |r| {
-        value += (buf[r*stride + col] - '0')*(std.math.powi(u64, 10, degree-(r-start_row)) catch unreachable);
     }
     if (value == 0) return null;
     return value;
